@@ -1,0 +1,229 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  admin
+  user
+}
+
+enum ProjectStatus {
+  active
+  archived
+}
+
+enum AccessLevel {
+  viewer
+  editor
+  manager
+}
+
+enum Priority {
+  high
+  medium
+  low
+}
+
+enum ArtifactType {
+  document
+  diagram
+}
+
+enum DocumentFormat {
+  docx
+  pdf
+}
+
+enum DiagramType {
+  UML
+  ER
+  flowchart
+  sequence
+  class
+  other
+}
+
+enum ExportFormat {
+  docx
+  pdf
+  png
+  sql
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id           Int      @id @default(autoincrement()) @map("user_id")
+  username     String   @unique
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(user)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  ownedProjects  Project[]       @relation("ProjectOwner")
+  memberships    ProjectMember[]
+  artifacts      Artifact[]
+
+  @@map("users")
+}
+
+model Project {
+  id          Int           @id @default(autoincrement()) @map("project_id")
+  projectName String        @map("project_name")
+  description String?
+  status      ProjectStatus @default(active)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  ownerId     Int           @map("owner_id")
+
+  // Relations
+  owner             User               @relation("ProjectOwner", fields: [ownerId], references: [id])
+  members           ProjectMember[]
+  requirements      Requirement[]
+  artifacts         Artifact[]
+  projectSdlcs      ProjectSdlc[]
+  feasibilityReport FeasibilityReport?
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id          Int         @id @default(autoincrement()) @map("member_id")
+  userId      Int         @map("user_id")
+  projectId   Int         @map("project_id")
+  accessLevel AccessLevel @default(viewer)
+  joinedAt    DateTime    @default(now()) @map("joined_at")
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@unique([userId, projectId])
+  @@map("project_members")
+}
+
+model Requirement {
+  id          Int      @id @default(autoincrement()) @map("requirement_id")
+  title       String
+  description String?
+  priority    Priority @default(medium)
+  projectId   Int      @map("project_id")
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@map("requirements")
+}
+
+model Artifact {
+  id           Int          @id @default(autoincrement()) @map("artifact_id")
+  artifactType ArtifactType @map("artifact_type")
+  projectId    Int          @map("project_id")
+  generatedBy  Int          @map("generated_by")
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  // Relations
+  project  Project   @relation(fields: [projectId], references: [id])
+  creator  User      @relation(fields: [generatedBy], references: [id])
+  document Document?
+  diagram  Diagram?
+  versions Version[]
+  exports  Export[]
+
+  @@map("artifacts")
+}
+
+model Document {
+  id             Int            @id @default(autoincrement()) @map("document_id")
+  artifactId     Int            @unique @map("artifact_id")
+  documentFormat DocumentFormat @map("document_format")
+
+  // Relations
+  artifact Artifact @relation(fields: [artifactId], references: [id])
+
+  @@map("documents")
+}
+
+model Diagram {
+  id          Int         @id @default(autoincrement()) @map("diagram_id")
+  artifactId  Int         @unique @map("artifact_id")
+  diagramType DiagramType @map("diagram_type")
+
+  // Relations
+  artifact Artifact @relation(fields: [artifactId], references: [id])
+
+  @@map("diagrams")
+}
+
+model Version {
+  id            Int      @id @default(autoincrement()) @map("version_id")
+  artifactId    Int      @map("artifact_id")
+  versionNumber String   @map("version_number")
+  changeSummary String?  @map("change_summary")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  artifact Artifact @relation(fields: [artifactId], references: [id])
+
+  @@map("versions")
+}
+
+model Export {
+  id           Int          @id @default(autoincrement()) @map("export_id")
+  artifactId   Int          @map("artifact_id")
+  exportFormat ExportFormat @map("export_format")
+  exportedAt   DateTime     @default(now()) @map("exported_at")
+
+  // Relations
+  artifact Artifact @relation(fields: [artifactId], references: [id])
+
+  @@map("exports")
+}
+
+model SdlcModel {
+  id          Int     @id @default(autoincrement()) @map("sdlc_id")
+  modelName   String  @unique @map("model_name")
+  description String?
+
+  // Relations
+  projectSdlcs ProjectSdlc[]
+
+  @@map("sdlc_models")
+}
+
+model ProjectSdlc {
+  id              Int    @id @default(autoincrement())
+  projectId       Int    @map("project_id")
+  sdlcId          Int    @map("sdlc_id")
+  confidenceScore Float? @map("confidence_score")
+
+  // Relations
+  project   Project   @relation(fields: [projectId], references: [id])
+  sdlcModel SdlcModel @relation(fields: [sdlcId], references: [id])
+
+  @@unique([projectId, sdlcId])
+  @@map("project_sdlc")
+}
+
+model FeasibilityReport {
+  id               Int     @id @default(autoincrement()) @map("report_id")
+  projectId        Int     @unique @map("project_id")
+  technicalScore   Float?  @map("technical_score")
+  economicScore    Float?  @map("economic_score")
+  operationalScore Float?  @map("operational_score")
+  finalDecision    String? @map("final_decision")
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@map("feasibility_reports")
+}
