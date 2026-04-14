@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DesignAI – Turn Ideas Into Software Designs Instantly</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0d1117;
+    --purple: #7c5cfc;
+    --pink: #e040fb;
+    --grad: linear-gradient(135deg, #7c5cfc, #e040fb);
+    --bg: #f8f9fe;
+    --text: #0d1117;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card-bg: #ffffff;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── BACKGROUND BLOBS ─── */
+  .blob-wrap {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  }
+  .blob {
+    position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.18;
+  }
+  .blob-1 { width: 520px; height: 520px; background: var(--purple); top: -120px; right: -60px; animation: drift 12s ease-in-out infinite alternate; }
+  .blob-2 { width: 380px; height: 380px; background: var(--pink); bottom: -80px; left: -60px; animation: drift 15s ease-in-out infinite alternate-reverse; }
+  @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(30px, 30px) scale(1.06); } }
+
+  /* ─── NAV ─── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(248,249,254,0.85);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 5%;
+    height: 64px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.15rem; color: var(--text);
+    text-decoration: none;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--grad); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+
+  .nav-links {
+    display: flex; gap: 36px; list-style: none;
+  }
+  .nav-links a {
+    text-decoration: none; color: var(--muted); font-size: 0.9rem; font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  .btn-primary {
+    background: var(--navy); color: #fff;
+    padding: 10px 22px; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.9rem;
+    border: none; cursor: pointer; text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn-primary:hover { background: #1a2235; transform: translateY(-1px); }
+
+  /* ─── HERO ─── */
+  .hero {
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 48px;
+    max-width: 1200px; margin: 0 auto;
+    padding: 80px 5% 60px;
+  }
+
+  .hero-text { animation: fadeUp 0.7s ease both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-text h1 {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: clamp(2.4rem, 4vw, 3.2rem);
+    line-height: 1.12; letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .grad-text {
+    background: var(--grad);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-text p {
+    margin-top: 20px;
+    color: var(--muted); font-size: 1rem; line-height: 1.7; max-width: 420px;
+  }
+
+  .hero-actions {
+    margin-top: 32px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+  }
+  .btn-outline {
+    background: transparent; color: var(--text);
+    padding: 10px 22px; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.9rem;
+    border: 1.5px solid var(--border); cursor: pointer; text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-outline:hover { border-color: var(--purple); background: rgba(124,92,252,0.04); }
+
+  /* stats */
+  .stats {
+    margin-top: 44px; display: flex; gap: 0; align-items: center;
+  }
+  .stat {
+    padding-right: 28px; margin-right: 28px;
+    border-right: 1px solid var(--border);
+  }
+  .stat:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+  .stat strong {
+    display: block; font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800;
+    color: var(--text);
+  }
+  .stat span { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+
+  /* ─── MOCKUP CARD ─── */
+  .hero-visual { animation: fadeUp 0.7s 0.15s ease both; }
+
+  .mockup-card {
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    overflow: hidden;
+    max-width: 460px; margin-left: auto;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .mockup-card:hover {
+    transform: translateY(-6px) rotate(-0.5deg);
+    box-shadow: 0 36px 80px rgba(0,0,0,0.12);
+  }
+
+  .mockup-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .dots { display: flex; gap: 7px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #ff5f56; }
+  .dot-y { background: #ffbd2e; }
+  .dot-g { background: #27c93f; }
+  .mockup-label { font-size: 0.75rem; color: var(--muted); font-weight: 500; }
+
+  .mockup-body { padding: 20px 18px 24px; display: flex; flex-direction: column; gap: 14px; }
+
+  /* skeleton lines */
+  .sk { background: #f0f1f5; border-radius: 6px; }
+  .sk-full { height: 10px; width: 100%; }
+  .sk-3q  { height: 10px; width: 76%; }
+  .sk-half{ height: 10px; width: 52%; }
+  .sk-sm  { height: 10px; width: 36%; }
+
+  .mockup-row { display: flex; gap: 12px; }
+  .mockup-block {
+    border-radius: 10px; height: 72px; flex: 1;
+    position: relative; overflow: hidden;
+  }
+  .mockup-block::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%);
+    animation: shimmer 2.2s infinite;
+  }
+  @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+  .bl-lavender { background: #ddd5ff; }
+  .bl-lilac    { background: #ead6ff; }
+  .bl-mint     { background: #c7f5e0; }
+  .bl-yellow   { background: #fef3c0; }
+  .bl-pink     { background: #ffd6e0; }
+
+  /* ─── FOOTER NOTE ─── */
+  .page-footer {
+    position: relative; z-index: 1;
+    text-align: center; padding: 20px;
+    font-size: 0.78rem; color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<!-- background blobs -->
+<div class="blob-wrap">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <a href="#" class="logo">
+    <span class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 13l-10-5v6l10 5 10-5v-6l-10 5z"/></svg>
+    </span>
+    DesignAI
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#">Home</a></li>
+    <li><a href="#">Features</a></li>
+    <li><a href="#">Generate</a></li>
+    <li><a href="#">Pricing</a></li>
+    <li><a href="#">Dashboard</a></li>
+  </ul>
+
+  <a href="#" class="btn-primary">Try Now</a>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="hero-text">
+    <h1>
+      Turn Ideas Into<br>
+      <span class="grad-text">Software Designs</span><br>
+      Instantly
+    </h1>
+
+    <p>
+      Describe your project in plain text and let AI generate UI layouts,
+      system architecture, and design suggestions — in seconds.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#" class="btn-primary">
+        <!-- wand icon -->
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2m0 2v2m0-2h-2m2 0h2M5 8l1.5 1.5M3 12h2m-2 0H1m2 0v-2m0 2v2M9 3 7.5 4.5M19 12a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"/></svg>
+        Start Designing
+      </a>
+      <a href="#" class="btn-outline">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        See How It Works
+      </a>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><strong>10x</strong><span>Faster Design</span></div>
+      <div class="stat"><strong>AI</strong><span>Powered</span></div>
+      <div class="stat"><strong>Free</strong><span>To Use</span></div>
+    </div>
+  </div>
+
+  <!-- mockup -->
+  <div class="hero-visual">
+    <div class="mockup-card">
+      <div class="mockup-bar">
+        <div class="dots">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+        </div>
+        <div class="mockup-label">AI Design Output</div>
+      </div>
+
+      <div class="mockup-body">
+        <div class="sk sk-full"></div>
+        <div class="sk sk-3q"></div>
+
+        <div class="mockup-row">
+          <div class="mockup-block bl-lavender"></div>
+          <div class="mockup-block bl-lilac"></div>
+        </div>
+
+        <div class="sk sk-3q"></div>
+        <div class="sk sk-half"></div>
+
+        <div class="mockup-row">
+          <div class="mockup-block bl-mint"></div>
+          <div class="mockup-block bl-yellow"></div>
+          <div class="mockup-block bl-pink"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<p class="page-footer">© 2026 DesignAI · All rights reserved</p>
+
+</body>
+</html>
